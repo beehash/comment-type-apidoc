@@ -1,0 +1,7 @@
+tags:
+  - name: moduleA
+    description: moduleA's description
+  - name: moduleB
+    description: moduleB's description
+  - name: moduleC
+    description: moduleC's description
