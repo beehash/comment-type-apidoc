@@ -1,3 +1,34 @@
 #!/usr/bin/env node
-const td = require("..");
-console.log(td);
+// zhsapidoc
+const minimist = require("minimist");
+const https = require('https');const http = require("http");
+const cp = require('child_process');
+const args = minimist(process.argv.slice(2));
+const { generateSwaggerSpec } = require('../src/index');
+const {staticController, httpsOptions} = require('../src/start.js');
+const uploadFiles = require('../src/release.js');
+
+const pagename = args.pagename || 'default';
+const rootDir = args.rootDir || (process.cwd() + '/src');
+const exec = args._[0];
+const modules = args._ || ['start'];
+
+console.log('请输入命令:start | release');
+if (args.v || args.version) {
+  console.log('  version is 0.0.1');
+}
+
+if(exec === 'start') {
+  console.log(222222, rootDir);
+  generateSwaggerSpec(rootDir, pagename, modules.slice(1));
+
+  http.createServer(httpsOptions, staticController)
+    .listen(8998, 'commentdoc.zhihuishu.com', () => {
+      cp.exec('start http://commentdoc.zhihuishu.com:8998/');
+      console.log('App is running at http://commentdoc.zhihuishu.com:8998/');
+    });
+}
+if(exec === 'release') {
+  generateSwaggerSpec(rootDir, pagename, modules.slice(1));
+  uploadFiles(pagename);
+}
