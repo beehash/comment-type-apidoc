@@ -1,31 +1,66 @@
 const genOpenApi = require("openapi-comment-parser");
 const path = require("path");
-const minimist = require("minimist");
-const rootDir = path.resolve(__dirname, "../src");
-const modelToYamlParser = require("./modelToYamlParser");
-const args = minimist(process.argv.slice(2));
+const fs = require('fs-extra');
+const { modelToYamlParser } = require("./modelToYamlParser");
 
-modules = args._;
-if (args._.length > 0) {
-  for (let arg of args) {
-    modelToYamlParser(rootDir + "/" + arg);
-  }
-}
-
-function generateOpenApis() {
+function generateOpenApis(rootDir, modules) {
   const paths = [];
-  if (args._.length > 0) {
-    for (const mod of args._) {
-      paths.push("../src/" + mod + "/**/*.controller.ts");
+  if (modules.length > 0) {
+    for (const mod of modules) {
+      modelToYamlParser(rootDir + "/" + module);
+      paths.push("./src/" + mod + "/**/*.controller.ts");
     }
   } else {
-    paths.push("../src/**/*.controller.ts");
+    // const files = fs.readdirSync(rootDir);
+    modelToYamlParser(rootDir);
+    paths.push("./src/**/*.controller.ts");
   }
-  console.log(paths);
   const openApiSpec = genOpenApi({
+    cwd: process.cwd(),
     include: ["./components/**/*.yaml", ...paths],
   });
+  const componentsSpec = genOpenApi({
+    cwd: path.resolve(__dirname, './'),
+    include: ["./components/**/*.yaml"]
+  });
+
+  openApiSpec.components = componentsSpec.components;
   return openApiSpec;
 }
 
-module.exports.default = generateOpenApis;
+const swaggerDefinition = {
+  openapi: "3.0.3",
+  info: {
+    title: "专业空间API",
+    version: "1.0.0",
+    description: "API",
+  },
+  host: "localhost:3001",
+  basePath: "/",
+};
+
+
+
+function generateSwaggerSpec(rootDir, pagename, modules) {
+  const openApiSpec = generateOpenApis(rootDir, modules);
+
+  const swaggerJSpec = {
+    ...swaggerDefinition,
+    ...openApiSpec,
+    info: { ...swaggerDefinition.info },
+    openapi: "3.0.3",
+  };
+
+  fs.writeFileSync(
+    path.resolve(
+      __dirname,
+      '../swagger-ui/jsons/' + pagename +'.json'
+    ),
+    JSON.stringify(swaggerJSpec),
+  );
+}
+
+module.exports = {
+  generateSwaggerSpec,
+};
+

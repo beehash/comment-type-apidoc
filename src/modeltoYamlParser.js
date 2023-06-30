@@ -80,7 +80,7 @@ function gennerateFileInterfaces(fileContent) {
   return interfacesStr
 }
 function modelToYamlParser(rootDir) {
-  readFiles(dir)
+  readFiles(rootDir)
   let yamlstr = `components:\n`
   let schemesStr = '\tschemas:\n'
   for (let file of files) {
@@ -94,9 +94,9 @@ function modelToYamlParser(rootDir) {
 
   yamlstr = convertTabtoSpace(yamlstr)
   fs.writeFileSync(
-    path.resolve(__dirname, '../components/moduleA.yaml'),
+    path.resolve(__dirname, './components/moduleA.yaml'),
     yamlstr
   )
 }
 
-module.exports.default = modelToYamlParser
+module.exports = { modelToYamlParser }
